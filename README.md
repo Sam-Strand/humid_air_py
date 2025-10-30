@@ -11,6 +11,25 @@ Python библиотека для расчета термодинамическ
 - 📐 **Полный набор параметров** - Все основные термодинамические характеристики
 
 ## Установка
-
+### Способ 1: Установка из репозитория (требуется Git)
 ```bash
 pip install git+https://github.com/Sam-Strand/humid_air_py.git
+```
+
+### Способ 2: Установка готового пакета (без Git)
+```bash
+pip install https://github.com/Sam-Strand/humid_air_py/releases/download/v1.0.2/humid_air_py-1.0.2-py3-none-any.whl
+```
+
+## Быстрый старт
+```python
+from  humid_air_py import Humid_air as ha
+
+# Расчет точки росы
+t_dry = 25.0  # °C, температура сухого термометра
+rh = 0.6      # доля, относительная влажность (0.0-1.0)
+
+t_dew = ha.dew_point_temperature(t_dry, rh)
+print(f"Точка росы: {t_dew:.2f} °C")
+# Точка росы: 16.69 °C
+```
