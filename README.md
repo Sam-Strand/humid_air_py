@@ -23,7 +23,7 @@ pip install https://github.com/Sam-Strand/humid_air_py/releases/download/v1.0.2/
 
 ## Быстрый старт
 ```python
-from humid_air_py import humid_air as ha
+from humid_air_py import Humid_air as ha
 
 # Расчет точки росы
 t_dry = 25.0  # °C, температура сухого термометра
