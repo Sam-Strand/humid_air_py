@@ -30,10 +30,12 @@ M_h2o = 0.01801528
 M = M_h2o / M_air
 # Газовая постоянная для сухого воздуха [Дж/(кг·K)]
 R_air = R / M_air
-# Удельные теплоемкости сухого воздуха [Дж/(кг·K)]
+# Удельная теплоемкость сухого воздуха [Дж/(кг·K)]
 C_p_air = 1005
-# Удельные теплоемкости водяного пара [Дж/(кг·K)]
+# Удельная теплоемкость водяного пара [Дж/(кг·K)]
 C_p_h2o = 1864
+# Удельная теплоемкость воды [Дж/(кг·K)]
+C_p_water = 4186.0
 # Перевод [°C] в [K] и обратно
 CtoK = 273.15
 # Скрытая теплота парообразования [Дж]
@@ -50,10 +52,147 @@ def vec(n, nopython=True, cache=True):
     return vectorize([f"float64({', '.join(['float64'] * n)})"], nopython=nopython, cache=cache)
 
 
+@vec(1)
+def E_t(t: ArrayLike):
+    '''
+    Расчет давления насыщенного пара по температуре (формула Магнуса)
+    Args:
+        t (ArrayLike): Температура воздуха [°C]
+    Returns:
+        ArrayLike: Давление насыщенного пара [Па]
+    '''
+    a = 611.2
+    b = 17.62 if t > 0 else 22.46
+    c = 243.12 if t > 0 else 272.62
+    return a * exp(b * t / (c + t))
+
+
+@vec(2)
+def t_i_d(i: ArrayLike, d: ArrayLike):
+    '''
+    Расчет температуры по энтальпии и влагосодержанию
+    Args:
+        i (ArrayLike): Энтальпия влажного воздуха [Дж/кг]
+        d (ArrayLike): Влагосодержание [доля]
+    Returns:
+        ArrayLike: Температура воздуха [°C]
+    '''
+    return (i - k1 * d) / (C_p_air + d * (C_p_h2o - k2))
+
+
+@vec(2)
+def e_d_p(d: ArrayLike, p: ArrayLike):
+    '''
+    Расчет парциального давления по влагосодержанию и общему давлению
+    Args:
+        d (ArrayLike): Влагосодержание [доля]
+        p (ArrayLike): Атмосферное давление [Па]
+    Returns:
+        ArrayLike: Парциальное давление водяного пара [Па]
+    '''
+    return (d * p) / (M + d)
+
+
+@vec(2)
+def h_E_e(E: ArrayLike, e: ArrayLike):
+    '''
+    Расчет относительной влажности по давлению насыщения и парциальному давлению
+    Args:
+        E (ArrayLike): Давление насыщенного пара [Па]
+        e (ArrayLike): Парциальное давление водяного пара [Па]
+    Returns:
+        ArrayLike: Относительная влажность [доля]
+    '''
+    return e / E
+
+
+@vec(2)
+def e_E_h(E: ArrayLike, h: ArrayLike):
+    '''
+    Расчет парциального давления по давлению насыщения и влажности
+    Args:
+        E (ArrayLike): Давление насыщенного пара [Па]
+        h (ArrayLike): Относительная влажность [доля]
+    Returns:
+        ArrayLike: Парциальное давление водяного пара [Па]
+    '''
+    return h * E
+
+
+@vec(2)
+def i_d_t(d: ArrayLike, t: ArrayLike):
+    '''
+    Расчет энтальпии по влагосодержанию и температуре
+    Args:
+        d (ArrayLike): Влагосодержание [доля]
+        t (ArrayLike): Температура воздуха [°C]
+    Returns:
+        ArrayLike: Энтальпия влажного воздуха [Дж/кг]
+    '''
+    return C_p_air * t + d * (k1 + (C_p_h2o - k2) * t)
+
+
+@vec(2)
+def d_e_p(e: ArrayLike, p: ArrayLike):
+    '''
+    Расчет влагосодержания по парциальному давлению и общему давлению
+    Args:
+        e (ArrayLike): Парциальное давление водяного пара [Па]
+        p (ArrayLike): Атмосферное давление [Па]
+    Returns:
+        ArrayLike: Влагосодержание [доля]
+    '''
+    return M * e / (p - e)
+
+
 class Humid_air:
     '''
     Класс для расчета параметров влажного воздуха с поддержкой numpy
     '''
+    @staticmethod
+    @vec(6)
+    def g_water(t: ArrayLike, p: ArrayLike, h: ArrayLike, t_water: ArrayLike, minT: ArrayLike, maxH: ArrayLike):
+        '''
+        Оптимизация УДЕЛЬНОГО расхода воды [кг].
+        Возвращает удельный расход.
+        '''
+        if h >= 1.0:
+            return 0.0
+        E = E_t(t)
+        e = e_E_h(E, h)
+        d = d_e_p(e, p)
+        d_max = d_e_p(E, p)
+        i = i_d_t(d, t)
+        i_w = C_p_water * t_water
+        max_specific_water = max(0, (d_max - d) * 1.2)
+
+        low_g = 0.0
+        high_g = max_specific_water
+        g = 0.0
+
+        for _ in range(50):
+            mid_g = (low_g + high_g) / 2
+            
+            d2 = d + mid_g
+            i2 = i + mid_g * i_w
+            t_new = t_i_d(i2, d2)
+            E2 = E_t(t_new)
+            e2 = e_d_p(d2, p)
+            h_new = h_E_e(E2, e2)
+            
+            conditions_met = (t_new >= minT) and (h_new <= maxH)
+            
+            if conditions_met:
+                g = mid_g
+                low_g = mid_g
+            else:
+                high_g = mid_g
+
+            if abs(high_g - low_g) < 1e-6:
+                break
+
+        return g
+
     @staticmethod
     @vec(4)
     def heating_target_temperature(p: ArrayLike, t1: ArrayLike, h1: ArrayLike, h2: ArrayLike) -> ArrayLike:
@@ -238,22 +377,7 @@ class Humid_air:
     class E:
         '''Методы для работы с давлением насыщенного пара'''
 
-        @staticmethod
-        @vec(1)
-        def t(t: ArrayLike):
-            '''
-            Расчет давления насыщенного пара по температуре (формула Магнуса)
-
-            Args:
-                t (ArrayLike): Температура воздуха [°C]
-
-            Returns:
-                ArrayLike: Давление насыщенного пара [Па]
-            '''
-            a = 611.2
-            b = 17.62 if t > 0 else 22.46
-            c = 243.12 if t > 0 else 272.62
-            return a * exp(b * t / (c + t))
+        t = E_t
 
         @staticmethod
         @vec(2)
@@ -273,35 +397,9 @@ class Humid_air:
     class e:
         '''Методы для работы с парциальным давлением водяного пара'''
 
-        @staticmethod
-        @vec(2)
-        def E_h(E: ArrayLike, h: ArrayLike):
-            '''
-            Расчет парциального давления по давлению насыщения и влажности
+        E_h = e_E_h
 
-            Args:
-                E (ArrayLike): Давление насыщенного пара [Па]
-                h (ArrayLike): Относительная влажность [доля]
-
-            Returns:
-                ArrayLike: Парциальное давление водяного пара [Па]
-            '''
-            return h * E
-
-        @staticmethod
-        @vec(2)
-        def d_p(d: ArrayLike, p: ArrayLike):
-            '''
-            Расчет парциального давления по влагосодержанию и общему давлению
-
-            Args:
-                d (ArrayLike): Влагосодержание [доля]
-                p (ArrayLike): Атмосферное давление [Па]
-
-            Returns:
-                ArrayLike: Парциальное давление водяного пара [Па]
-            '''
-            return (d * p) / (M + d)
+        d_p = e_d_p
 
         @staticmethod
         @vec(3)
@@ -322,20 +420,7 @@ class Humid_air:
     class d:
         '''Методы для работы с влагосодержанием'''
 
-        @staticmethod
-        @vec(2)
-        def e_p(e: ArrayLike, p: ArrayLike):
-            '''
-            Расчет влагосодержания по парциальному давлению и общему давлению
-
-            Args:
-                e (ArrayLike): Парциальное давление водяного пара [Па]
-                p (ArrayLike): Атмосферное давление [Па]
-
-            Returns:
-                ArrayLike: Влагосодержание [доля]
-            '''
-            return M * e / (p - e)
+        e_p = d_e_p
 
         @staticmethod
         @vec(2)
@@ -438,20 +523,7 @@ class Humid_air:
 
             return c * numerator / (b - numerator)
 
-        @staticmethod
-        @vec(2)
-        def i_d(i: ArrayLike, d: ArrayLike):
-            '''
-            Расчет температуры по энтальпии и влагосодержанию
-
-            Args:
-                i (ArrayLike): Энтальпия влажного воздуха [Дж/кг]
-                d (ArrayLike): Влагосодержание [доля]
-
-            Returns:
-                ArrayLike: Температура воздуха [°C]
-            '''
-            return (i - k1 * d) / (C_p_air + d * (C_p_h2o - k2))
+        i_d = t_i_d
 
     class rho:
         '''Методы для работы с плотностью'''
@@ -488,38 +560,12 @@ class Humid_air:
     class h:
         '''Методы для работы с относительной влажностью'''
 
-        @staticmethod
-        @vec(2)
-        def E_e(E: ArrayLike, e: ArrayLike):
-            '''
-            Расчет относительной влажности по давлению насыщения и парциальному давлению
-
-            Args:
-                E (ArrayLike): Давление насыщенного пара [Па]
-                e (ArrayLike): Парциальное давление водяного пара [Па]
-
-            Returns:
-                ArrayLike: Относительная влажность [доля]
-            '''
-            return e / E
+        e_E = h_E_e
 
     class i:
         '''Методы для работы с энтальпией'''
 
-        @staticmethod
-        @vec(2)
-        def d_t(d: ArrayLike, t: ArrayLike):
-            '''
-            Расчет энтальпии по влагосодержанию и температуре
-
-            Args:
-                d (ArrayLike): Влагосодержание [доля]
-                t (ArrayLike): Температура воздуха [°C]
-
-            Returns:
-                ArrayLike: Энтальпия влажного воздуха [Дж/кг]
-            '''
-            return C_p_air * t + d * (k1 + (C_p_h2o - k2) * t)
+        d_t = i_d_t
 
     class vT:
         '''Методы для работы с виртуальной температурой'''
@@ -637,12 +683,3 @@ class Humid_air:
                 ArrayLike: Удельный объем [м³/кг]
             '''
             return 1 / rho
-
-
-if __name__ == '__main__':
-    # Пример расчетов
-    print(Humid_air.density(10, 101325, 0.5))  # 1.244425737661975
-    print(Humid_air.density([10], (101325), [0.5]))  # [1.24442581]
-    # [1.2467098  1.24613878 1.24556777 1.24499675 1.24442574 1.24385472 1.24328371 1.24271269 1.24214168 1.24157066]
-    print(Humid_air.density(10, 101325,
-                            [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]))
