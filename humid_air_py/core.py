@@ -16,9 +16,9 @@ v   [м/с] - скорость
 V   [м³] - Объем
 '''
 
-from numba import vectorize
 from math import exp, log
 import numpy.typing as npt
+from .vec import vec
 
 # Универсальная газовая постоянная [Дж/(моль·K)]
 R = 8.31446261815324
@@ -45,11 +45,6 @@ k2 = 2360
 
 
 ArrayLike = npt.ArrayLike
-
-
-def vec(n, nopython=True, cache=True):
-    '''n аргументов float64, возвращает float64'''
-    return vectorize([f"float64({', '.join(['float64'] * n)})"], nopython=nopython, cache=cache)
 
 
 @vec(1)
