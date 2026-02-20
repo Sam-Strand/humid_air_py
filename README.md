@@ -18,7 +18,7 @@ pip install git+https://github.com/Sam-Strand/humid_air_py.git
 
 ### Способ 2: Установка готового пакета (без Git)
 ```bash
-pip install https://github.com/Sam-Strand/humid_air_py/releases/download/v1.0.2/humid_air_py-1.0.2-py3-none-any.whl
+pip install https://github.com/Sam-Strand/humid_air_py/releases/download/v1.0.3/humid_air_py-1.0.3-py3-none-any.whl
 ```
 
 Модуль для расчета параметров влажного воздуха
