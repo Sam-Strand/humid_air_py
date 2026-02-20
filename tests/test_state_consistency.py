@@ -5,7 +5,6 @@
 
 import json
 import pytest
-import numpy as np
 from pathlib import Path
 from humid_air import Humid_air
 
