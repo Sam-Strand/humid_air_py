@@ -2,8 +2,8 @@
 Влажный воздух - библиотека для расчета параметров влажного воздуха
 '''
 
-from .core import Humid_air
+from .main import Humid_air
 
-__version__ = '1.0.2'
-__author__ = 'Садовский М.К.'
-__all__ = ['Humid_air']
+__all__ = [
+    'Humid_air'
+]

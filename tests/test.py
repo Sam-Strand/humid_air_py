@@ -1,4 +1,4 @@
-from humid_air_py import Humid_air
+from humid_air import Humid_air
 
 print(Humid_air.density(10, 101325, 0.5)) # 1.244425737661975
 

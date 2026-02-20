@@ -3,8 +3,8 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "humid_air_py"
-version = "1.0.2"
+name = "humid_air"
+version = "1.0.3"
 authors = [
     {name = "Садовский М.К.", email = "i@maxim-sadovskiy.ru"},
 ]

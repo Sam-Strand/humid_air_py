@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 
 import numpy as np
-from humid_air_py import Humid_air
+from humid_air import Humid_air
 
 
 def create_td_diagram(p=101325, t_min=-10, t_max=50, d_max=0.04, figsize=(12, 8)):
@@ -12,8 +12,8 @@ def create_td_diagram(p=101325, t_min=-10, t_max=50, d_max=0.04, figsize=(12, 8)
     fig, ax = plt.subplots(figsize=figsize)
     
     # Расчет максимального влагосодержания
-    E = Humid_air.E.t(t_max)
-    max_d = Humid_air.d.e_p(E, p)
+    E = Humid_air.E_sat.t(t_max)
+    max_d = Humid_air.d.e_evap_p(E, p)
     d_max = min(d_max, max_d)
     
     # Генерация сетки
@@ -30,9 +30,9 @@ def create_td_diagram(p=101325, t_min=-10, t_max=50, d_max=0.04, figsize=(12, 8)
         
         for t in t_range:
             try:
-                E = Humid_air.E.t(t)
-                e = Humid_air.e.E_h(E, h)
-                d = Humid_air.d.e_p(e, p)
+                E = Humid_air.E_sat.t(t)
+                e = Humid_air.e_evap.E_sat_h(E, h)
+                d = Humid_air.d.e_evap_p(e, p)
                 if d <= d_max:
                     d_values.append(d)
                     valid_t.append(t)
