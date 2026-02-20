@@ -205,9 +205,10 @@ class Humid_air:
         from .e_evap import E_sat_h, d_p, p_t_vT
 
     class d:
-        from .d import e_evap_p, L_l, c, i_t
+        from .d import e_evap_p, L_sat_l_evap, c, i_t
+
     class t:
-        from .t import L, e_evap_p_vT, E_sat, i_d
+        from .t import L_sat, e_evap_p_vT, E_sat, i_d
 
     class rho:
         from .rho import p_vT, V

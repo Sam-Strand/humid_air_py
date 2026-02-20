@@ -15,7 +15,8 @@ def e_t_vT(e: ArrayLike, t: ArrayLike, vT: ArrayLike):
     Returns:
         ArrayLike: Атмосферное давление [Па]
     '''
-    return (M * e * (t + CtoK)) / (vT - (t + CtoK))
+    T = t + CtoK
+    return (1 - M) * e * vT / (vT - T)
 
 
 @vec(2)

@@ -41,4 +41,5 @@ def p_t_vT(p: ArrayLike, t: ArrayLike, vT: ArrayLike):
     Returns:
         ArrayLike: Парциальное давление водяного пара [Па]
     '''
-    return (p * (vT - (t + CtoK))) / (M * (t + CtoK))
+    T = t + CtoK
+    return (p / (1 - M)) * (1 - T / vT)

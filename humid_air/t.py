@@ -6,15 +6,15 @@ from math import log
 
 
 @vec(1)
-def L(L: ArrayLike):
+def L_sat(L_sat: ArrayLike):
     '''
     Расчет температуры по удельной теплоте образования пара
     Args:
-        L (ArrayLike): Удельная теплота образования пара [Дж/кг]
+        L_sat (ArrayLike): Удельная теплота образования пара [Дж/кг]
     Returns:
         ArrayLike: Температура [°C]
     '''
-    return (k1 + L) / k2
+    return (k1 - L_sat) / k2
 
 
 @vec(3)
@@ -28,7 +28,8 @@ def e_evap_p_vT(e_evap: ArrayLike, p: ArrayLike, vT: ArrayLike):
     Returns:
         ArrayLike: Температура воздуха [°C]
     '''
-    return (vT / (1 + M * e_evap / p)) - CtoK
+    T = vT * (1 - (1 - M) * e_evap / p)
+    return T - CtoK
 
 
 @vec(1)

@@ -18,16 +18,16 @@ def e_evap_p(e_evap: ArrayLike, p: ArrayLike):
 
 
 @vec(2)
-def L_l(L: ArrayLike, l: ArrayLike):
+def L_sat_l_evap(L_sat: ArrayLike, l_evap: ArrayLike):
     '''
     Расчет влагосодержания по удельной и общей теплоте парообразования
     Args:
-        L (ArrayLike): Удельная теплота образования пара [Дж/кг]
-        l (ArrayLike): Удельная теплота парообразования [Дж/кг]
+        L_sat (ArrayLike): Удельная теплота образования пара [Дж/кг]
+        l_evap (ArrayLike): Удельная теплота парообразования [Дж/кг]
     Returns:
         ArrayLike: Влагосодержание [доля]
     '''
-    return l / L
+    return l_evap / L_sat
 
 
 @vec(1)

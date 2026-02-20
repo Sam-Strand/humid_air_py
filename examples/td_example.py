@@ -21,8 +21,9 @@ def create_td_diagram(p=101325, t_min=-10, t_max=50, d_max=0.04, figsize=(12, 8)
     d_range = np.linspace(0, d_max, 100)
     
     # 1. Линии постоянной относительной влажности
-    humidity_levels = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-    colors_h = plt.cm.Blues(np.linspace(0.3, 1, len(humidity_levels)))
+    n = 11
+    humidity_levels = [h/10 for h in range(n)]
+    colors_h = plt.cm.Blues(np.linspace(0.3, 1, n))
     
     for h, color in zip(humidity_levels, colors_h):
         d_values = []
