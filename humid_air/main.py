@@ -139,7 +139,7 @@ class Humid_air:
         Returns:
             ArrayLike: Предельное влагосодержание [доля]
         '''
-        E_sat = t_E_sat(t)
+        E_sat = E_sat_t(t)
         return d_e_evap_p(E_sat, p)
 
     @staticmethod
@@ -155,9 +155,7 @@ class Humid_air:
         Returns:
             ArrayLike: Плотность влажного воздуха [кг/м³]
         '''
-
-
-        E_sat = t_E_sat(t)
+        E_sat = E_sat_t(t)
         e = e_evap_E_sat_h(E_sat, h)
         vT = vT_e_p_t(e, p, t)
         return rho_p_vT(p, vT)
@@ -175,7 +173,7 @@ class Humid_air:
         Returns:
             ArrayLike: Влагосодержание [доля]
         '''
-        E_sat = t_E_sat(t)
+        E_sat = E_sat_t(t)
         e = e_evap_E_sat_h(E_sat, h)
         return d_e_evap_p(e, p)
 
