@@ -233,8 +233,8 @@ def main():
     
     # Сохраняем
     output_file = "tests/state_snapshots.json"
-    with open(output_file, "w") as f:
-        json.dump(snapshots, f, indent=2, cls=NumpyEncoder)
+    with open(output_file, "w", encoding='UTF-8') as f:
+        json.dump(snapshots, f, indent=2, cls=NumpyEncoder, ensure_ascii=False)
     
     print(f"\n✅ {len(points)} состояний сохранено в {output_file}")
 
