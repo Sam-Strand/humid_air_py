@@ -1,8 +1,10 @@
-from numba import vectorize
-import numpy.typing as npt
+from numbers import Real
+from numpy.typing import NDArray
+import numpy as np
+from typing import TypeVar
+from numba import njit
 
-ArrayLike = npt.ArrayLike
+Number = TypeVar('Number', Real, NDArray[np.floating])
 
-def vec(n, nopython=True, cache=True):
-    '''n аргументов float64, возвращает float64'''
-    return vectorize([f"float64({', '.join(['float64'] * n)})"], nopython=nopython, cache=cache)
+def vec(cache=True):
+    return njit(cache=cache)

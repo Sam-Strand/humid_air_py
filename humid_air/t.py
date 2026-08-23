@@ -1,45 +1,45 @@
 '''Методы для работы с температурой'''
 
-from .vec import vec, ArrayLike
+from .vec import vec, Number
 from .consts import CtoK, M, k1, k2, C_p_air, C_p_h2o
 from math import log
 
 
-@vec(1)
-def L_sat(L_sat: ArrayLike):
+@vec()
+def L_sat(L_sat: Number) -> Number:
     '''
     Расчет температуры по удельной теплоте образования пара
     Args:
-        L_sat (ArrayLike): Удельная теплота образования пара [Дж/кг]
+        L_sat (Number): Удельная теплота образования пара [Дж/кг]
     Returns:
-        ArrayLike: Температура [°C]
+        Number: Температура [°C]
     '''
     return (k1 - L_sat) / k2
 
 
-@vec(3)
-def e_evap_p_vT(e_evap: ArrayLike, p: ArrayLike, vT: ArrayLike):
+@vec()
+def e_evap_p_vT(e_evap: Number, p: Number, vT: Number) -> Number:
     '''
     Расчет температуры по парциальному давлению, общему давлению и виртуальной температуре
     Args:
-        e_evap (ArrayLike): Парциальное давление водяного пара [Па]
-        p (ArrayLike): Атмосферное давление [Па]
-        vT (ArrayLike): Виртуальная температура [K]
+        e_evap (Number): Парциальное давление водяного пара [Па]
+        p (Number): Атмосферное давление [Па]
+        vT (Number): Виртуальная температура [K]
     Returns:
-        ArrayLike: Температура воздуха [°C]
+        Number: Температура воздуха [°C]
     '''
     T = vT * (1 - (1 - M) * e_evap / p)
     return T - CtoK
 
 
-@vec(1)
-def E_sat(E_sat: ArrayLike):
+@vec()
+def E_sat(E_sat: Number) -> Number:
     '''
     Расчет температуры по давлению насыщенного пара (обратная формула Магнуса)
     Args:
-        E_sat (ArrayLike): Давление насыщенного пара [Па]
+        E_sat (Number): Давление насыщенного пара [Па]
     Returns:
-        ArrayLike: Температура воздуха [°C]
+        Number: Температура воздуха [°C]
     '''
     a = 611.2
     b = 17.62
@@ -52,14 +52,14 @@ def E_sat(E_sat: ArrayLike):
     return c * numerator / (b - numerator)
 
 
-@vec(2)
-def i_d(i: ArrayLike, d: ArrayLike):
+@vec()
+def i_d(i: Number, d: Number) -> Number:
     '''
     Расчет температуры по энтальпии и влагосодержанию
     Args:
-        i (ArrayLike): Энтальпия влажного воздуха [Дж/кг]
-        d (ArrayLike): Влагосодержание [доля]
+        i (Number): Энтальпия влажного воздуха [Дж/кг]
+        d (Number): Влагосодержание [доля]
     Returns:
-        ArrayLike: Температура воздуха [°C]
+        Number: Температура воздуха [°C]
     '''
     return (i - k1 * d) / (C_p_air + d * (C_p_h2o - k2))

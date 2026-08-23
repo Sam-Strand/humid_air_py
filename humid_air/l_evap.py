@@ -1,16 +1,16 @@
 '''Методы для работы с удельной теплотой парообразования'''
 
-from .vec import vec, ArrayLike
+from .vec import vec, Number
 
 
-@vec(2)
-def d_L_sat(d: ArrayLike, L_sat: ArrayLike):
+@vec()
+def d_L_sat(d: Number, L_sat: Number) -> Number:
     '''
     Расчет общей теплоты парообразования
     Args:
-        d (ArrayLike): Влагосодержание [доля]
-        L_sat (ArrayLike): Удельная теплота образования пара [Дж/кг]
+        d (Number): Влагосодержание [доля]
+        L_sat (Number): Удельная теплота образования пара [Дж/кг]
     Returns:
-        ArrayLike: Общая теплота парообразования [Дж/кг]
+        Number: Общая теплота парообразования [Дж/кг]
     '''
     return L_sat * d

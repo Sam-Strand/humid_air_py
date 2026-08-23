@@ -1,5 +1,5 @@
-from math import exp, log
-from .vec import vec, ArrayLike
+from numpy import exp, log
+from .vec import vec, Number
 from .consts import C_p_water
 
 from .E_sat import t as E_sat_t
@@ -17,8 +17,8 @@ class Humid_air:
     Класс для расчета параметров влажного воздуха с поддержкой numpy
     '''
     @staticmethod
-    @vec(6)
-    def g_water(t: ArrayLike, p: ArrayLike, h: ArrayLike, t_water: ArrayLike, minT: ArrayLike, maxH: ArrayLike):
+    @vec()
+    def g_water(t: Number, p: Number, h: Number, t_water: Number, minT: Number, maxH: Number) -> Number:
         '''
         Оптимизация удельного расхода воды [кг].
         Возвращает удельный расход.
@@ -62,8 +62,8 @@ class Humid_air:
         return g
 
     @staticmethod
-    @vec(4)
-    def heating_target_temperature(p: ArrayLike, t1: ArrayLike, h1: ArrayLike, h2: ArrayLike) -> ArrayLike:
+    @vec()
+    def heating_target_temperature(p: Number, t1: Number, h1: Number, h2: Number) -> Number:
         '''
         Расчет температуры нагрева для достижения целевой влажности при постоянном влагосодержании
 
@@ -71,13 +71,13 @@ class Humid_air:
         используются разные коэффициенты формулы Магнуса для льда и воды.
 
         Args:
-            p (ArrayLike): Атмосферное давление [Па]
-            t1 (ArrayLike): Начальная температура воздуха [°C]
-            h1 (ArrayLike): Начальная относительная влажность [доля]
-            h2 (ArrayLike): Целевая относительная влажность [доля]
+            p (Number): Атмосферное давление [Па]
+            t1 (Number): Начальная температура воздуха [°C]
+            h1 (Number): Начальная относительная влажность [доля]
+            h2 (Number): Целевая относительная влажность [доля]
 
         Returns:
-            ArrayLike: Температура [°C], при которой влажность достигает h2
+            Number: Температура [°C], при которой влажность достигает h2
 
         Алгоритм:
         1. Если начальная температура >= 0°C:
@@ -112,48 +112,48 @@ class Humid_air:
                 return c_water * K / (b_water - K)
 
     @staticmethod
-    def dew_point_temperature(t: ArrayLike, h: ArrayLike):
+    def dew_point_temperature(t: Number, h: Number) -> Number:
         '''
         Расчет температуры точки росы по температуре и относительной влажности
 
         Args:
-            t (ArrayLike): Температура воздуха [°C]
-            h (ArrayLike): Относительная влажность [доля]
+            t (Number): Температура воздуха [°C]
+            h (Number): Относительная влажность [доля]
 
         Returns:
-            ArrayLike: Температура точки росы [°C]
+            Number: Температура точки росы [°C]
         '''
         E_sat = E_sat_t(t)
         e = e_evap_E_sat_h(E_sat, h)
         return t_E_sat(e)
 
     @staticmethod
-    def maximum_moisture_content(p: ArrayLike, t: ArrayLike):
+    def maximum_moisture_content(p: Number, t: Number) -> Number:
         '''
         Расчет предельного влагосодержания (при 100% влажности)
 
         Args:
-            p (ArrayLike): Атмосферное давление [Па]
-            t (ArrayLike): Температура воздуха [°C]
+            p (Number): Атмосферное давление [Па]
+            t (Number): Температура воздуха [°C]
 
         Returns:
-            ArrayLike: Предельное влагосодержание [доля]
+            Number: Предельное влагосодержание [доля]
         '''
         E_sat = E_sat_t(t)
         return d_e_evap_p(E_sat, p)
 
     @staticmethod
-    def density(t: ArrayLike, p: ArrayLike, h: ArrayLike):
+    def density(t: Number, p: Number, h: Number) -> Number:
         '''
         Расчет плотности влажного воздуха
 
         Args:
-            t (ArrayLike): Температура воздуха [°C]
-            p (ArrayLike): Атмосферное давление [Па]
-            h (ArrayLike): Относительная влажность [доля]
+            t (Number): Температура воздуха [°C]
+            p (Number): Атмосферное давление [Па]
+            h (Number): Относительная влажность [доля]
 
         Returns:
-            ArrayLike: Плотность влажного воздуха [кг/м³]
+            Number: Плотность влажного воздуха [кг/м³]
         '''
         E_sat = E_sat_t(t)
         e = e_evap_E_sat_h(E_sat, h)
@@ -161,34 +161,34 @@ class Humid_air:
         return rho_p_vT(p, vT)
 
     @staticmethod
-    def moisture_content(t: ArrayLike, p: ArrayLike, h: ArrayLike):
+    def moisture_content(t: Number, p: Number, h: Number) -> Number:
         '''
         Расчет влагосодержания по температуре, давлению и влажности
 
         Args:
-            t (ArrayLike): Температура воздуха [°C]
-            p (ArrayLike): Атмосферное давление [Па]
-            h (ArrayLike): Относительная влажность [доля]
+            t (Number): Температура воздуха [°C]
+            p (Number): Атмосферное давление [Па]
+            h (Number): Относительная влажность [доля]
 
         Returns:
-            ArrayLike: Влагосодержание [доля]
+            Number: Влагосодержание [доля]
         '''
         E_sat = E_sat_t(t)
         e = e_evap_E_sat_h(E_sat, h)
         return d_e_evap_p(e, p)
 
     @staticmethod
-    @vec(2)
-    def dynamic_pressure(rho: ArrayLike, v: ArrayLike):
+    @vec()
+    def dynamic_pressure(rho: Number, v: Number) -> Number:
         '''
         Расчет динамического давления
 
         Args:
-            rho (ArrayLike): Плотность воздуха [кг/м³]
-            v (ArrayLike): Скорость воздуха [м/с]
+            rho (Number): Плотность воздуха [кг/м³]
+            v (Number): Скорость воздуха [м/с]
 
         Returns:
-            ArrayLike: Динамическое давление [Па]
+            Number: Динамическое давление [Па]
         '''
         return rho * v ** 2 / 2
 

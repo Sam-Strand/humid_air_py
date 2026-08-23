@@ -1,17 +1,17 @@
 '''Методы для работы с давлением насыщенного пара'''
 
-from .vec import vec, ArrayLike
-from math import exp
+from .vec import vec, Number
+from numpy import exp
 
 
-@vec(1)
-def t(t: ArrayLike):
+@vec()
+def t(t: Number) -> Number:
     '''
     Расчет давления насыщенного пара по температуре (формула Магнуса)
     Args:
-        t (ArrayLike): Температура воздуха [°C]
+        t (Number): Температура воздуха [°C]
     Returns:
-        ArrayLike: Давление насыщенного пара [Па]
+        Number: Давление насыщенного пара [Па]
     '''
     a = 611.2
     b = 17.62 if t > 0 else 22.46
@@ -19,14 +19,14 @@ def t(t: ArrayLike):
     return a * exp(b * t / (c + t))
 
 
-@vec(2)
-def e_evap_h(e_evap: ArrayLike, h: ArrayLike):
+@vec()
+def e_evap_h(e_evap: Number, h: Number) -> Number:
     '''
     Расчет давления насыщенного пара по парциальному давлению и влажности
     Args:
-        e_evape (ArrayLike): Парциальное давление водяного пара [Па]
-        h (ArrayLike): Относительная влажность [доля]
+        e_evape (Number): Парциальное давление водяного пара [Па]
+        h (Number): Относительная влажность [доля]
     Returns:
-        ArrayLike: Давление насыщенного пара [Па]
+        Number: Давление насыщенного пара [Па]
     '''
     return e_evap / h

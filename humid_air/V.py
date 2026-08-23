@@ -1,15 +1,15 @@
 '''Методы для работы с удельным объемом'''
 
-from .vec import vec, ArrayLike
+from .vec import vec, Number
 
 
-@vec(1)
-def rho(rho: ArrayLike):
+@vec()
+def rho(rho: Number) -> Number:
     '''
     Расчет удельного объема по плотности
     Args:
-        rho (ArrayLike): Плотность влажного воздуха [кг/м³]
+        rho (Number): Плотность влажного воздуха [кг/м³]
     Returns:
-        ArrayLike: Удельный объем [м³/кг]
+        Number: Удельный объем [м³/кг]
     '''
     return 1 / rho
